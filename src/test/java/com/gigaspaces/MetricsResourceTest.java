@@ -1,4 +1,4 @@
-package com.example;
+package com.gigaspaces;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
-public class MyResourceTest {
+public class MetricsResourceTest {
 
     private HttpServer server;
     private WebTarget target;
