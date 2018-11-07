@@ -1,26 +1,20 @@
 package com.gigaspaces;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
+import javax.json.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 
 @Path("metrics")
 public class MetricsResource {
 
+
     @GET
     @Produces("application/json")
     @Path("/")
-    public String get() {
-        return "Metrics Service";
+    public Response get() {
+        return Response.ok().build();
     }
 
     @OPTIONS
@@ -39,6 +33,9 @@ public class MetricsResource {
     @Produces("application/json")
     @Consumes("application/json")
     public JsonArray annotation(JsonObject annotation) {
+
+        String sq = annotation.toString();
+        System.out.println(sq);
 
         JsonArrayBuilder arr = Json.createArrayBuilder();
         JsonObjectBuilder obj = Json.createObjectBuilder();
@@ -69,18 +66,10 @@ public class MetricsResource {
 
     @POST
     @Path("/search")
-    @Consumes("application/json")
+    //@Consumes("application/json")
     @Produces("application/json")
-    public JsonArray search(JsonObject query) {
-
-        String sq = query.toString();
-        System.out.println(sq);
-
-        JsonArrayBuilder arr = Json.createArrayBuilder();
-        arr.add("upper_75");
-        arr.add("upper_80");
-        arr.add("upper_90");
-        return arr.build();
+    public Object search(/*JsonObject query*/) {
+        return SpaceDS.getTimeSeriesTypes();
     }
 
     @OPTIONS
@@ -94,43 +83,67 @@ public class MetricsResource {
                 .build();
     }
 
+
+    @GET
+    @Path("/test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object ester(){
+        System.out.println("Calling test");
+        TimeSeriesResults res[] = new TimeSeriesResults[4];
+
+        System.out.println("res:" + res);
+        return res;
+    }
+
     @POST
     @Path("/query")
     @Consumes("application/json")
-    @Produces("application/json")
-    public JsonArray query(JsonObject query) {
+    //@Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object query(JsonObject query) {
 
-        JsonArrayBuilder arr = Json.createArrayBuilder();
-
-        String sq = query.toString();
+        /*String sq = query1.toString();
+        sq = sq.replaceAll("\r?\n", "");
         System.out.println(sq);
+        JsonObject query;
+        try{
+            JsonReader reader = Json.createReader(new StringReader(sq));
+            query  = reader.readObject();
+            reader.close();
+        }
+        catch(Exception e){
+            return "got exception reading json: " + e.toString()+ "trace:" + e.getStackTrace().toString();
+        }*/
+
+        Range range = Range.from(query.getJsonObject("range"));
 
         JsonArray targets = query.getJsonArray("targets");
         if (targets != null) {
             JsonObjectBuilder target = Json.createObjectBuilder();
             String tgt = targets.getJsonObject(0).getString("target");
-            if (tgt != null) {
-                target.add("target", tgt);
+            String type = targets.getJsonObject(0).getString("type");
+            if (type.equals("table")) {
+                Object[] arr = new Object[1];
+                arr[0] = getTableResults(tgt, range);
+                return arr;
+            } else {
+                return getTimeSeriesResults(tgt, range);
             }
-            Range range = Range.from(query.getJsonObject("range"));
-            target.add("datapoints", createDatapoints(range));
-            arr.add(target);
+        } else {
+            return Json.createArrayBuilder().build();
         }
-
-        return arr.build();
     }
 
-    private JsonArrayBuilder createDatapoints(Range range) {
 
-        JsonArrayBuilder datapoints = Json.createArrayBuilder();
 
-        int samples = 100;
-        long step = (range.getDuration()) / samples;
+    public Object getTableResults(String type, Range range){
+        System.out.println("getTableResults:Query target is:" + type);
+        return SpaceDS.getTableResults(type, range);
+    }
 
-        for (int i = 0; i < samples; i++) {
-            datapoints.add(Json.createArrayBuilder().add(Math.random() + i).add(range.getStart() + i * step));
-        }
-        return datapoints;
+    public Object getTimeSeriesResults(String type, Range range){
+        System.out.println("getTimeSeriesResults:Query target is:" + type);
+        return SpaceDS.getResultsAsTimeSeries(type, range);
     }
 
 }
