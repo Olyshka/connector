@@ -9,7 +9,7 @@ import javax.ws.rs.core.Response;
 @Path("metrics")
 public class MetricsResource {
 
-
+    //Used to test that the controller is up.can be modified the ensure the space is accessable
     @GET
     @Produces("application/json")
     @Path("/")
@@ -28,6 +28,9 @@ public class MetricsResource {
                 .build();
     }
 
+
+
+    // Currently not implemented can add lables according to time as certian events (blackfriday/electionday/closinghour...)
     @POST
     @Path("/annotations")
     @Produces("application/json")
@@ -64,9 +67,9 @@ public class MetricsResource {
                 .build();
     }
 
+    // Return list of space class we can query in grafana (according to the tabelDef file supplied)
     @POST
     @Path("/search")
-    //@Consumes("application/json")
     @Produces("application/json")
     public Object search(/*JsonObject query*/) {
         return SpaceDS.getTimeSeriesTypes();
@@ -84,37 +87,13 @@ public class MetricsResource {
     }
 
 
-    @GET
-    @Path("/test")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object ester(){
-        System.out.println("Calling test");
-        TimeSeriesResults res[] = new TimeSeriesResults[4];
 
-        System.out.println("res:" + res);
-        return res;
-    }
-
+    // Return timeSEries or table by reading from the space the required type in required time range
     @POST
     @Path("/query")
     @Consumes("application/json")
-    //@Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Object query(JsonObject query) {
-
-        /*String sq = query1.toString();
-        sq = sq.replaceAll("\r?\n", "");
-        System.out.println(sq);
-        JsonObject query;
-        try{
-            JsonReader reader = Json.createReader(new StringReader(sq));
-            query  = reader.readObject();
-            reader.close();
-        }
-        catch(Exception e){
-            return "got exception reading json: " + e.toString()+ "trace:" + e.getStackTrace().toString();
-        }*/
-
         Range range = Range.from(query.getJsonObject("range"));
 
         JsonArray targets = query.getJsonArray("targets");
@@ -136,14 +115,24 @@ public class MetricsResource {
 
 
 
+    /*Return space data as Grafana table result*/
     public Object getTableResults(String type, Range range){
         System.out.println("getTableResults:Query target is:" + type);
         return SpaceDS.getTableResults(type, range);
     }
 
+    /*Return space data as Grafana TimeSeries result*/
     public Object getTimeSeriesResults(String type, Range range){
         System.out.println("getTimeSeriesResults:Query target is:" + type);
         return SpaceDS.getResultsAsTimeSeries(type, range);
+    }
+
+    @GET
+    @Path("/test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object test(){
+        System.out.println("Calling test with getTimeSeriesTypes");
+        return SpaceDS.getTimeSeriesTypes();
     }
 
 }

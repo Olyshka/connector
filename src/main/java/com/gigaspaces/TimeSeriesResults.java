@@ -3,7 +3,8 @@ package com.gigaspaces;
 
 import java.util.List;
 
-/*[
+/*Example Expected Grafana timeSeries Results
+[
         {
         "target":"upper_75", // The field being queried for
         "datapoints":[
@@ -21,7 +22,6 @@ import java.util.List;
         ]*/
 public class TimeSeriesResults {
     String target;
-    //Object[][] datapoints;
     List datapoints;
 
     public TimeSeriesResults() {

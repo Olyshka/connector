@@ -2,6 +2,7 @@ package com.gigaspaces;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.message.internal.MessageBodyFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.io.BufferedReader;
@@ -9,8 +10,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Main class.
@@ -41,6 +43,12 @@ public class Main {
      */
     //args : properties file name, metaData file name
     public static void main(String[] args) throws Exception {
+        Logger logger = Logger.getLogger(ResourceConfig.class.getName());
+        logger.setLevel (Level.ALL);
+        Logger logger2 = Logger.getLogger(org.glassfish.jersey.message.internal.WriterInterceptorExecutor.class.getName());
+        logger2.setLevel(Level.ALL);
+        Logger logger3 = Logger.getLogger(MessageBodyFactory.class.getName());
+        logger3.setLevel(Level.ALL);
         if (args != null && args.length == 2){
             Properties props = getProperties(args[0]);
             String host = props.getProperty("CONNECTOR_HOST");
@@ -73,7 +81,13 @@ public class Main {
 
     }
 
-    //String displayName,String fullTypeName, String dateFieldName, String valuesFieldName, String seriesFieldName, boolean dateIsLong
+    /*
+    Excpects file with following row format:
+    displayName,fullTypeName, dateFieldName, valuesFieldName, seriesFieldName
+    displayName is the name that will appear in grafana, fullTypeName is the type name in the space,
+    valuesFieldName is the name of the field in space class that contains the value (double)
+    seriesFieldName is the name of the field in space class that categorize series (as type/product name/etc)
+     */
     public  static TimeSeriesTypes readMetaData(String fileIn)throws java.io.IOException{
         TimeSeriesTypes metaData = new TimeSeriesTypes();
         String line = null;
@@ -98,9 +112,9 @@ public class Main {
         return metaData;
     }
 
-    public static byte[] transcodeField(byte[] source, Charset from, Charset to) {
+   /* public static byte[] transcodeField(byte[] source, Charset from, Charset to) {
         return new String(source, from).getBytes(to);
-    }
+    }*/
 
 
 }

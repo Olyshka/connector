@@ -1,12 +1,6 @@
 package com.gigaspaces;
 
-public class TableResults {
-        Column[] columns;
-        Object[][] rows;
-        String type = "table";
-
-
-        /*
+/*Expected Grafana table result
         {
     "columns":[
       {"text":"Time","type":"time"},
@@ -20,7 +14,11 @@ public class TableResults {
     ],
     "type":"table"
   }
-         */
+*/
+public class TableResults {
+        Column[] columns;
+        Object[][] rows;
+        String type = "table";
 
         public Column[] getColumns() {
             return columns;

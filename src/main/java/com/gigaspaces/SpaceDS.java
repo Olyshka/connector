@@ -12,15 +12,15 @@ import java.util.logging.Logger;
 
 /*Space Data source - holds proxy for the space,
  do all operation against the space
+ TBD - consider using localview instead of remote access to the space, depends on usecase and amount of data
  */
 public class SpaceDS {
     private static final Logger logger = Logger.getLogger(SpaceDS.class.getName());
     private static GigaSpace gs;
-    //private static TimeSeriesTypes metaData;
     private static TimeSeriesTypes  metaData;
 
     static public void setProperties(Properties spaceProperties){
-        String spaceName = spaceProperties.getProperty("XAP_SPACE_NAME","insightedge-space");
+        String spaceName = spaceProperties.getProperty("XAP_SPACE_NAME","demo");
         SpaceProxyConfigurer configurer = new SpaceProxyConfigurer(spaceName);
         String group = spaceProperties.getProperty("XAP_LOOKUP_GROUPS",System.getenv("XAP_LOOKUP_GROUPS"));
         if (group!= null)
@@ -32,23 +32,6 @@ public class SpaceDS {
         gs = new GigaSpaceConfigurer(configurer).create();
     }
 
-
-     /*public  SpaceDS(Properties spaceProperties, TimeSeriesTypes metaData1){
-        metaData = metaData1;
-        logger.info("metadata was set there are " + this.getMetaData().getTypes().size() + " tables defined.");
-        String spaceName = spaceProperties.getProperty("XAP_SPACE_NAME","insightedge-space");
-        SpaceProxyConfigurer configurer = new SpaceProxyConfigurer(spaceName);
-        String group = spaceProperties.getProperty("XAP_LOOKUP_GROUPS",System.getenv("XAP_LOOKUP_GROUPS"));
-        if (group!= null)
-            configurer.lookupGroups(group);
-        String locator = spaceProperties.getProperty("XAP_LOOKUP_LOCATORS",System.getenv("XAP_LOOKUP_LOCATORS"));
-        if (locator!= null)
-            configurer.lookupGroups(spaceProperties.getProperty("XAP_LOOKUP_LOCATORS"));
-
-        gs = new GigaSpaceConfigurer(configurer).create();
-        logger.info("space proxy was started: space-name:" + spaceName + " group:" + group + " locator:"+ locator);
-
-    }*/
 
     public static GigaSpace getGs() {
         return gs;
@@ -64,7 +47,6 @@ public class SpaceDS {
 
     public static void setMetaData(TimeSeriesTypes setmetaData) {
         metaData = setmetaData;
-
     }
 
 
@@ -85,7 +67,7 @@ public class SpaceDS {
             }
             SQLQuery query = new SQLQuery<SpaceDocument>(type.getFullTypeName(), type.getDateFieldName() + ">= ? and " + type.getDateFieldName() + " <=? ORDER BY " + type.getDateFieldName() , QueryResultType.DOCUMENT, range.getStart(), range.getEnd())
                     .setProjections(type.getDateFieldName(),type.getSeriesFieldName(),type.getValuesFieldName());
-            //toDo move to SpaceIterator problen is that it dosn't support ordering
+            //toDo move to SpaceIterator (problen is that it dosn't support ordering yet)
             //SpaceIterator<SpaceDocument> itr  = gs.iterator(query);
             SpaceDocument[] results = (SpaceDocument[]) gs.readMultiple(query);
             HashMap<String, List> map = new HashMap<>();
@@ -128,7 +110,7 @@ public class SpaceDS {
     }
 
 
-    /*
+    /*Expected structure for Grafana for table result
      {
     "columns":[
       {"text":"Time","type":"time"},
